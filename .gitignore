@@ -1,0 +1,10 @@
+# dataset
+model/data/
+model/module/ptb.train.npy
+model/module/ptb.train.txt
+model/module/ptb.vocab.pkl
+# log
+model/logs/
+# auto
+__pycache__/
+.DS_Store
