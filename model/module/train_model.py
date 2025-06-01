@@ -30,7 +30,6 @@ class Train_model(L.LightningModule):
             num_negative=self.num_negative
         )
         self.criterion = nn.BCEWithLogitsLoss()
-        # self.criterion = nn.CrossEntropyLoss()
 
     def training_step(self, batch, batch_idx):
 
@@ -50,7 +49,6 @@ class Train_model(L.LightningModule):
 
         # loss calculation
         labels = torch.cat((torch.ones(target.shape[0], 1), torch.zeros(target.shape[0], self.num_negative)), dim=1).to(self.my_device)
-        # pred = nn.Sigmoid(pred)     # self.criterion = nn.CrossEntropyLoss()
         loss = self.criterion(pred, labels)
         self.log('train_loss', loss, prog_bar=True, on_step=True, on_epoch=False)
         return loss

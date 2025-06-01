@@ -27,8 +27,8 @@ def main():
 def compare_two_models():
     # Load pickle file
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
-    vecs1_path = '/Users/yamazakikota/Documents/research_master/save_ptb/5:2/pkl' # O'REILLY model
-    vecs2_path = '/Users/yamazakikota/Documents/research_master/model/logs/CBOW_model/2025-05-02_16-27-26' # PyTorch model
+    vecs1_path = '' # vector path of O'REILLY model
+    vecs2_path = '' # vector path of PyTorch model
     epoch = 10
     vecs1 = []
     vecs2 = []
@@ -40,6 +40,7 @@ def compare_two_models():
             data = pkl.load(f)
         vecs2.append(torch.tensor(data['wordvecs']).float().to(device))
 
+    del vecs2[0]
     # Calculate mean and variance
     print("Calculating mean and variance.")
     vecs1_mean, vecs1_var = mean_vector(vecs1)
@@ -73,25 +74,39 @@ def compare_two_models():
 def compare_same_model():
     # Load pickle file
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
-    vecs_path = '/Users/yamazakikota/Documents/research_master/model/logs/CBOW_model/2025-05-02_16-27-26' # PyTorch model
     epoch = 10
     vecs = []
-    for i in tqdm(range(epoch), desc='Loading word vectors'):
-        with open(os.path.join(vecs_path, str(i), f'wordvecs_{i}.pkl'), 'rb') as f:
-            data = pkl.load(f)
-        vecs.append(torch.tensor(data['wordvecs']).float().to(device))
-
-    # vecs_path = '' # O'REILLY model
-    # epoch = 10
-    # vecs = []
-    # for i in tqdm(range(epoch), desc='Loading word vectors'):
-    #     with open(os.path.join(vecs_path, f'cbow_params_{i}.pkl'), 'rb') as f:
-    #         data = pkl.load(f)
-    #     vecs.append(torch.tensor(data['word_vecs']).float().to(device))
+    ave = False
+    while True:
+        vecs_kind = input("Enter the kind of word vectors (o: O'REILLY model, p: PyTorch model):")
+        match vecs_kind:
+                case 'o':
+                    print("Loading O'REILLY model word vectors.")
+                    vecs_path = '/Volumes/share/K_YAMAZAKI/lab_mac/save_ptb/5:8/pkl' # vector path of O'REILLY model
+                    for i in tqdm(range(epoch), desc='Loading word vectors'):
+                        with open(os.path.join(vecs_path, f'cbow_params_{i}.pkl'), 'rb') as f:
+                            data = pkl.load(f)
+                        vecs.append(torch.tensor(data['word_vecs']).float().to(device))
+                    break
+                case 'p':
+                    print("Loading PyTorch model word vectors.")
+                    vecs_path = '/Volumes/share/K_YAMAZAKI/lab_win/2025-05-08_20-49-52' # vector path of PyTorch model
+                    for i in tqdm(range(epoch), desc='Loading word vectors'):
+                        with open(os.path.join(vecs_path, str(i), f'wordvecs_{i}.pkl'), 'rb') as f:
+                            data = pkl.load(f)
+                        vecs.append(torch.tensor(data['wordvecs']).float().to(device))
+                    del vecs[0]
+                    break
+                case _:
+                    print("Invalid input. Please enter again.")
+                    continue
 
     # Calculate mean and variance
-    print("Calculating mean and variance.")
-    vecs_mean, vecs_var = mean_vector(vecs)
+    if ave == False:
+        vecs_mean = vecs[7]
+    else:
+        print("Calculating mean and variance.")
+        vecs_mean, vecs_var = mean_vector(vecs)
 
     # Print the results
     while True:
@@ -107,6 +122,8 @@ def compare_same_model():
             break
         word_id1 = data['word_to_id'][input_word1]
         word_id2 = data['word_to_id'][input_word2]
+        # print(vecs_mean[word_id1])
+        # print(vecs_mean[word_id2])
         print(f"Cosine similarity of [{input_word1}] and [{input_word2}]:\n{cos_similarity(vecs_mean[word_id1], vecs_mean[word_id2])}")
         print(f"Euclidean distance of [{input_word1}] and [{input_word2}]:\n{euclidean_distance(vecs_mean[word_id1], vecs_mean[word_id2])}")
         conti = input("Do you want to continue? (y/n):")
